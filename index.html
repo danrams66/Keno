@@ -32,6 +32,10 @@
       font-size: 1em;
       margin-top: 1em;
     }
+    .square small {
+  font-size: 0.7em;
+  color: #777;
+  }
   </style>
 </head>
 <body>
@@ -43,6 +47,7 @@
 
   <script>
     const grid = document.getElementById('kenoGrid');
+    const frequency = Array(80).fill(0);
 
     // Create 80 squares
     for (let i = 1; i <= 80; i++) {
@@ -55,7 +60,10 @@
     function pickNumbers() {
   const count = parseInt(document.getElementById('pickCount').value);
   const allSquares = document.querySelectorAll('.square');
-  allSquares.forEach(s => s.classList.remove('picked'));
+  allSquares.forEach((s, i) => {
+    s.classList.remove('picked');
+    s.innerHTML = (i + 1).toString().padStart(2, '0') + "<br><small>" + frequency[i] + "</small>";
+  });
 
   const picks = new Set();
   while (picks.size < count) {
@@ -63,7 +71,11 @@
   }
 
   picks.forEach(index => {
+    frequency[index]++;
     allSquares[index].classList.add('picked');
+    allSquares[index].innerHTML =
+      (index + 1).toString().padStart(2, '0') +
+      "<br><small>" + frequency[index] + "</small>";
   });
 }
   </script>
