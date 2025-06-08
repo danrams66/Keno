@@ -1,61 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Keno Number Picker</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      background-color: #f4f4f9;
+      color: #333;
       text-align: center;
       padding: 2em;
     }
+
+    .header {
+      background: #1976d2;
+      padding: 1em;
+      color: white;
+      margin-bottom: 1em;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
       gap: 0.5em;
-      max-width: 500px;
-      margin: 1em auto;
-    }
-    .square {
-     border: 1px solid #ccc;
-     padding: 1em;
-     background: #f9f9f9;
-     border-radius: 4px;
-     text-align: center;
-   }
-    .picked {
-      background: gold;
-      font-weight: bold;
-    }
-    button {
-      padding: 1em 2em;
-      font-size: 1em;
-      margin-top: 1em;
-    }
-    .square {
-     text-align: center;
-    }
-    .square small {
-     font-size: 0.7em;
-     color: #777;
+      max-width: 600px;
+      margin: 0 auto 2em;
     }
 
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    .square {
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      background: white;
+      padding: 1em;
+      font-weight: bold;
+      text-align: center;
+      transition: background 0.2s ease-in-out;
+    }
+
+    .picked {
+      background-color: #ffd54f;
+      color: black;
+    }
+
+    .square small {
+      display: block;
+      font-size: 0.7em;
+      color: #777;
+    }
+
+    input[type="number"] {
+      padding: 0.5em;
+      width: 80px;
+      font-size: 1em;
+      margin-left: 0.5em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 0.75em 1.5em;
+      margin: 1em 0.5em;
+      border: none;
+      background-color: #1976d2;
+      color: white;
+      border-radius: 6px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #1565c0;
+    }
   </style>
 </head>
 <body>
-  <h1>Keno Number Picker</h1>
+  <div class="header">
+    <h1>Keno Number Picker</h1>
+  </div>
+
   <div class="grid" id="kenoGrid"></div>
+
   <label for="pickCount">How many numbers to pick (1–80)?</label>
-<input type="number" id="pickCount" min="1" max="80" value="6" />
-<button onclick="pickNumbers()">Pick Numbers</button>
-<button onclick="resetBoard()">Reset</button>
+  <input type="number" id="pickCount" min="1" max="80" value="6" />
+  <br/>
+  <button onclick="pickNumbers()">Pick Numbers</button>
+  <button onclick="resetBoard()">Reset</button>
 
   <script>
     const grid = document.getElementById('kenoGrid');
     const frequency = Array(80).fill(0);
 
-    // Create 80 squares
     for (let i = 1; i <= 80; i++) {
       const square = document.createElement('div');
       square.className = 'square';
@@ -64,36 +108,36 @@
     }
 
     function pickNumbers() {
-  const count = parseInt(document.getElementById('pickCount').value);
-  const allSquares = document.querySelectorAll('.square');
+      const count = parseInt(document.getElementById('pickCount').value);
+      const allSquares = document.querySelectorAll('.square');
 
-  allSquares.forEach((s, i) => {
-    s.classList.remove('picked');
-    s.innerHTML = (i + 1).toString().padStart(2, '0') + "<br><small>" + frequency[i] + "</small>";
-  });
+      allSquares.forEach((s, i) => {
+        s.classList.remove('picked');
+        s.innerHTML = (i + 1).toString().padStart(2, '0') + "<br><small>" + frequency[i] + "</small>";
+      });
 
-  const picks = new Set();
-  while (picks.size < count) {
-    picks.add(Math.floor(Math.random() * 80));
-  }
+      const picks = new Set();
+      while (picks.size < count) {
+        picks.add(Math.floor(Math.random() * 80));
+      }
 
-  picks.forEach(index => {
-    frequency[index]++;
-    allSquares[index].classList.add('picked');
-    allSquares[index].innerHTML =
-      (index + 1).toString().padStart(2, '0') +
-      "<br><small>" + frequency[index] + "</small>";
-  });
-}
+      picks.forEach(index => {
+        frequency[index]++;
+        allSquares[index].classList.add('picked');
+        allSquares[index].innerHTML =
+          (index + 1).toString().padStart(2, '0') +
+          "<br><small>" + frequency[index] + "</small>";
+      });
+    }
+
     function resetBoard() {
-  const allSquares = document.querySelectorAll('.square');
-  for (let i = 0; i < 80; i++) {
-    frequency[i] = 0;
-    allSquares[i].classList.remove('picked');
-    allSquares[i].innerHTML = (i + 1).toString().padStart(2, '0') + "<br><small>0</small>";
-  }
-}
-
+      const allSquares = document.querySelectorAll('.square');
+      for (let i = 0; i < 80; i++) {
+        frequency[i] = 0;
+        allSquares[i].classList.remove('picked');
+        allSquares[i].innerHTML = (i + 1).toString().padStart(2, '0') + "<br><small>0</small>";
+      }
+    }
   </script>
 </body>
 </html>
