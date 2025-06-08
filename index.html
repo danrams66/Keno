@@ -37,7 +37,9 @@
 <body>
   <h1>Keno Number Picker</h1>
   <div class="grid" id="kenoGrid"></div>
-  <button onclick="pickNumbers()">Pick 20 Numbers</button>
+  <label for="pickCount">How many numbers to pick (1–80)?</label>
+<input type="number" id="pickCount" min="1" max="80" value="6" />
+<button onclick="pickNumbers()">Pick Numbers</button>
 
   <script>
     const grid = document.getElementById('kenoGrid');
@@ -51,18 +53,19 @@
     }
 
     function pickNumbers() {
-      const allSquares = document.querySelectorAll('.square');
-      allSquares.forEach(s => s.classList.remove('picked'));
+  const count = parseInt(document.getElementById('pickCount').value);
+  const allSquares = document.querySelectorAll('.square');
+  allSquares.forEach(s => s.classList.remove('picked'));
 
-      const picks = new Set();
-      while (picks.size < 20) {
-        picks.add(Math.floor(Math.random() * 80));
-      }
+  const picks = new Set();
+  while (picks.size < count) {
+    picks.add(Math.floor(Math.random() * 80));
+  }
 
-      picks.forEach(index => {
-        allSquares[index].classList.add('picked');
-      });
-    }
+  picks.forEach(index => {
+    allSquares[index].classList.add('picked');
+  });
+}
   </script>
 </body>
 </html>
