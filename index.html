@@ -33,10 +33,14 @@
       font-size: 1em;
       margin-top: 1em;
     }
+    .square {
+     text-align: center;
+    }
     .square small {
-  font-size: 0.7em;
-  color: #777;
-  }
+     font-size: 0.7em;
+     color: #777;
+    }
+
   </style>
 </head>
 <body>
@@ -61,6 +65,7 @@
     function pickNumbers() {
   const count = parseInt(document.getElementById('pickCount').value);
   const allSquares = document.querySelectorAll('.square');
+
   allSquares.forEach((s, i) => {
     s.classList.remove('picked');
     s.innerHTML = (i + 1).toString().padStart(2, '0') + "<br><small>" + frequency[i] + "</small>";
