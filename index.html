@@ -49,6 +49,7 @@
   <label for="pickCount">How many numbers to pick (1–80)?</label>
 <input type="number" id="pickCount" min="1" max="80" value="6" />
 <button onclick="pickNumbers()">Pick Numbers</button>
+<button onclick="resetBoard()">Reset</button>
 
   <script>
     const grid = document.getElementById('kenoGrid');
@@ -84,6 +85,15 @@
       "<br><small>" + frequency[index] + "</small>";
   });
 }
+    function resetBoard() {
+  const allSquares = document.querySelectorAll('.square');
+  for (let i = 0; i < 80; i++) {
+    frequency[i] = 0;
+    allSquares[i].classList.remove('picked');
+    allSquares[i].innerHTML = (i + 1).toString().padStart(2, '0') + "<br><small>0</small>";
+  }
+}
+
   </script>
 </body>
 </html>
