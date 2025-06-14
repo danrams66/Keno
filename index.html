@@ -57,6 +57,13 @@
     #pickerControls {
       margin-top: 30px;
     }
+    #analysisResults,
+    #freqChart,
+    #autoPickContainer {
+    margin-top: 20px;
+    display: block;
+   }
+
   </style>
 </head>
 <body>  <h1>Keno Number Picker</h1><label for="pastDraws">Enter Previous Keno Numbers</label>
@@ -65,6 +72,7 @@
   <label><input type="checkbox" id="coldMode"> Show Cold Numbers Instead</label><button id="analyzeBtn">Analyze Numbers</button>
 
   <div id="analysisResults"></div>
+  <h4>Frequency Chart:</h4>
   <canvas id="freqChart" width="400" height="200"></canvas>
   <div id="autoPickContainer"></div>  <div id="kenoBoard"></div> 
 
