@@ -1,73 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Keno Number Picker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keno Predictor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2em;
-      background-color: #f0f0f0;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 0.5em;
+      font-family: Arial, sans-serif;
+      padding: 20px;
       max-width: 600px;
-      margin: 1em auto;
+      margin: auto;
     }
-    .square {
+    textarea, canvas, input[type="file"] {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+    .keno-cell {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      margin: 2px;
+      text-align: center;
       border: 1px solid #ccc;
-      padding: 1em;
-      background: white;
-      border-radius: 6px;
+      border-radius: 5px;
       font-weight: bold;
-      font-size: 1.2em;
     }
-    .picked {
-      background-color: gold;
-      color: black;
-    }
-    button {
-      padding: 1em 2em;
-      font-size: 1.2em;
-      margin-top: 1em;
-      cursor: pointer;
+    #kenoBoard {
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
     }
   </style>
 </head>
 <body>
-  <h1>Keno Number Picker</h1>
-  <p>Click the button to draw 20 random numbers!</p>
-  <div class="grid" id="kenoGrid"></div>
-  <button onclick="pickNumbers()">Pick 20 Numbers</button>
+
+  <h2>Keno Predictor</h2>
+
+  <h3>Enter Previous Keno Numbers</h3>
+  <textarea id="pastDraws" rows="5" placeholder="Enter sets of numbers, one set per line (e.g., 4 12 19 33 48)"></textarea>
+  <input type="file" id="csvUpload" accept=".csv">
+  <label><input type="checkbox" id="coldMode"> Show Cold Numbers Instead</label>
+  <button id="analyzeBtn">Analyze Numbers</button>
+  <div id="analysisResults"></div>
+  <canvas id="freqChart" width="400" height="200"></canvas>
+  <div id="autoPickContainer"></div>
+
+  <div id="kenoBoard"></div>
 
   <script>
-    const grid = document.getElementById('kenoGrid');
-
-    // Create the grid of numbers
+    // Create Keno board
+    const board = document.getElementById("kenoBoard");
     for (let i = 1; i <= 80; i++) {
-      const square = document.createElement('div');
-      square.className = 'square';
-      square.textContent = i.toString().padStart(2, '0');
-      grid.appendChild(square);
+      const cell = document.createElement("div");
+      cell.className = "keno-cell";
+      cell.textContent = i;
+      board.appendChild(cell);
     }
 
-    function pickNumbers() {
-      const allSquares = document.querySelectorAll('.square');
-      allSquares.forEach(s => s.classList.remove('picked'));
+    // CSV Upload
+    document.getElementById("csvUpload").addEventListener("change", function (e) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        document.getElementById("pastDraws").value = reader.result;
+      };
+      reader.readAsText(e.target.files[0]);
+    });
 
-      const picks = new Set();
-      while (picks.size < 20) {
-        picks.add(Math.floor(Math.random() * 80));
+    // Analyze input
+    function analyzeDraws(drawsText, showCold = false) {
+      const allNumbers = new Array(81).fill(0);
+      const lines = drawsText.trim().split("\n");
+
+      for (const line of lines) {
+        const numbers = line.trim().split(/\s+/).map(Number);
+        numbers.forEach(num => {
+          if (num >= 1 && num <= 80) allNumbers[num]++;
+        });
       }
 
-      picks.forEach(index => {
-        allSquares[index].classList.add('picked');
+      localStorage.setItem("kenoHistory", drawsText);
+
+      let sorted = allNumbers.map((count, number) => ({ number, count }));
+      sorted.sort((a, b) => showCold ? a.count - b.count : b.count - a.count);
+
+      return {
+        topNumbers: sorted.slice(0, 10),
+        fullStats: sorted
+      };
+    }
+
+    // Button click
+    document.getElementById("analyzeBtn").addEventListener("click", () => {
+      const input = document.getElementById("pastDraws").value;
+      const showCold = document.getElementById("coldMode").checked;
+      const { topNumbers, fullStats } = analyzeDraws(input, showCold);
+
+      highlightNumbers(topNumbers.map(n => n.number + 1));
+      autoFillSelection(topNumbers.map(n => n.number + 1));
+      renderChart(fullStats);
+
+      document.getElementById("analysisResults").innerHTML = `<h4>Top 10 ${showCold ? "Coldest" : "Hottest"} Numbers:</h4>
+        <p>${topNumbers.map(n => `${n.number + 1} (${n.count}x)`).join(", ")}</p>`;
+    });
+
+    // Highlight numbers
+    function highlightNumbers(numbers) {
+      const cells = document.querySelectorAll(".keno-cell");
+      cells.forEach(cell => {
+        const num = parseInt(cell.textContent);
+        if (numbers.includes(num)) {
+          cell.style.backgroundColor = "#ffd700";
+        } else {
+          cell.style.backgroundColor = "";
+        }
       });
     }
+
+    // Auto Pick display
+    function autoFillSelection(numbers) {
+      const container = document.getElementById("autoPickContainer");
+      container.innerHTML = `<h4>Auto Picked Numbers:</h4><p>${numbers.join(", ")}</p>`;
+    }
+
+    // Chart
+    function renderChart(stats) {
+      if (window.freqChart) window.freqChart.destroy();
+
+      const ctx = document.getElementById("freqChart").getContext("2d");
+      window.freqChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: stats.map(n => n.number + 1),
+          datasets: [{
+            label: 'Frequency',
+            data: stats.map(n => n.count),
+            backgroundColor: '#4285f4'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // Load saved history
+    window.addEventListener("load", () => {
+      const saved = localStorage.getItem("kenoHistory");
+      if (saved) {
+        document.getElementById("pastDraws").value = saved;
+        const { topNumbers, fullStats } = analyzeDraws(saved);
+        highlightNumbers(topNumbers.map(n => n.number + 1));
+        autoFillSelection(topNumbers.map(n => n.number + 1));
+        renderChart(fullStats);
+        document.getElementById("analysisResults").innerHTML = `<h4>Top 10 Most Frequent Numbers:</h4>
+          <p>${topNumbers.map(n => `${n.number + 1} (${n.count}x)`).join(", ")}</p>`;
+      }
+    });
   </script>
+
 </body>
 </html>
